@@ -21,7 +21,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        max_tokens: 60,
+        max_completion_tokens: 60,
         temperature: 0.3,
       }),
     });
@@ -51,7 +51,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
         body: JSON.stringify({
           model: this.model,
           messages: [{ role: 'user', content: 'Say "ok"' }],
-          max_tokens: 5,
+          max_completion_tokens: 5,
         }),
       });
 
