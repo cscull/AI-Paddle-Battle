@@ -132,6 +132,19 @@ export interface TrashTalkMessage {
   timestamp: number;
 }
 
+// ── Debug Logging ──
+
+export interface DebugLogEntry {
+  timestamp: number;
+  side: 'left' | 'right';
+  type: 'move' | 'trash_talk' | 'error';
+  model: string;
+  raw: string;
+  parsed?: string;
+  fallback?: boolean;
+  responseTimeMs?: number;
+}
+
 // ── Socket Events ──
 
 export interface ServerToClientEvents {
@@ -141,6 +154,7 @@ export interface ServerToClientEvents {
   matchEnd: (stats: MatchStats) => void;
   error: (msg: string) => void;
   connectionTest: (result: { provider: string; success: boolean; error?: string }) => void;
+  debugLog: (entry: DebugLogEntry) => void;
 }
 
 export interface ClientToServerEvents {

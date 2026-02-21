@@ -17,6 +17,7 @@ export default function App() {
   const {
     gameState,
     trashTalkLog,
+    debugLog,
     isConnected,
     startMatch,
     pauseMatch,
@@ -74,6 +75,7 @@ export default function App() {
             isOpen={statsPanelOpen}
             onToggle={() => setStatsPanelOpen(!statsPanelOpen)}
             trashTalkMessages={trashTalkLog}
+            debugLog={debugLog}
           />
         </>
       )}

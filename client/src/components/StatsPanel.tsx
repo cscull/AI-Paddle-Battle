@@ -1,4 +1,5 @@
-import type { MatchConfig, TrashTalkMessage } from '../types';
+import { useState } from 'react';
+import type { MatchConfig, TrashTalkMessage, DebugLogEntry } from '../types';
 import TrashTalkLog from './TrashTalkLog';
 import '../styles/stats.css';
 
@@ -7,9 +8,11 @@ interface StatsPanelProps {
   isOpen: boolean;
   onToggle: () => void;
   trashTalkMessages?: TrashTalkMessage[];
+  debugLog?: DebugLogEntry[];
 }
 
-export default function StatsPanel({ matchConfig, isOpen, onToggle, trashTalkMessages = [] }: StatsPanelProps) {
+export default function StatsPanel({ matchConfig, isOpen, onToggle, trashTalkMessages = [], debugLog = [] }: StatsPanelProps) {
+  const [showDebug, setShowDebug] = useState(false);
   const leftPlayer = matchConfig.players.left;
   const rightPlayer = matchConfig.players.right;
 
@@ -66,6 +69,37 @@ export default function StatsPanel({ matchConfig, isOpen, onToggle, trashTalkMes
             <TrashTalkLog messages={trashTalkMessages} />
           </>
         )}
+
+        {/* Debug log section */}
+        <div className="stats-debug-section">
+          <button
+            className="stats-debug-toggle"
+            onClick={() => setShowDebug(!showDebug)}
+          >
+            {showDebug ? 'Hide' : 'Show'} Debug Log ({debugLog.filter(e => e.fallback).length} fallbacks / {debugLog.length} total)
+          </button>
+          {showDebug && (
+            <div className="stats-debug-log">
+              {debugLog.length === 0 ? (
+                <div className="stats-debug-empty">No responses yet...</div>
+              ) : (
+                [...debugLog].reverse().map((entry, i) => (
+                  <div key={i} className={`stats-debug-entry ${entry.fallback ? 'stats-debug-entry--fallback' : ''}`}>
+                    <div className="stats-debug-meta">
+                      <span className={`stats-debug-side stats-debug-side--${entry.side}`}>
+                        {entry.side === 'left' ? 'L' : 'R'}
+                      </span>
+                      <span className="stats-debug-model">{entry.model}</span>
+                      <span className="stats-debug-parsed">{entry.parsed}</span>
+                      <span className="stats-debug-time">{entry.responseTimeMs}ms</span>
+                    </div>
+                    <div className="stats-debug-raw">{entry.raw || '(empty)'}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

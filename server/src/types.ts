@@ -30,6 +30,8 @@ export interface MoveResponse {
   move: MoveDirection;
   raw?: string;
   error?: boolean;
+  parseMethod?: 'json' | 'regex_json' | 'keyword' | 'fallback';
+  fallback?: boolean;
 }
 
 export interface LLMGameState {
@@ -134,6 +136,17 @@ export interface TrashTalkMessage {
 
 // ── Socket Events ──
 
+export interface DebugLogEntry {
+  timestamp: number;
+  side: 'left' | 'right';
+  type: 'move' | 'trash_talk' | 'error';
+  model: string;
+  raw: string;
+  parsed?: string;
+  fallback?: boolean;
+  responseTimeMs?: number;
+}
+
 export interface ServerToClientEvents {
   gameState: (state: GameState) => void;
   trashTalk: (msg: TrashTalkMessage) => void;
@@ -141,6 +154,7 @@ export interface ServerToClientEvents {
   matchEnd: (stats: MatchStats) => void;
   error: (msg: string) => void;
   connectionTest: (result: { provider: string; success: boolean; error?: string }) => void;
+  debugLog: (entry: DebugLogEntry) => void;
 }
 
 export interface ClientToServerEvents {

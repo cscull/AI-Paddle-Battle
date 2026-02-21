@@ -1,7 +1,7 @@
 import type { Socket } from 'socket.io';
 import type {
   MatchConfig, GameState, LLMGameState, LLMAdapter,
-  PlayerStats, MatchStats, TrashTalkMessage, MoveDirection,
+  PlayerStats, MatchStats, TrashTalkMessage, MoveDirection, DebugLogEntry,
   ServerToClientEvents, ClientToServerEvents,
 } from './types.js';
 import { GameEngine } from './game-engine.js';
@@ -77,12 +77,32 @@ export class MatchManager {
 
       const startTime = Date.now();
       const response = await this.adapters[side]!.getMove(llmState);
-      this.responseTimes[side].push(Date.now() - startTime);
+      const responseTimeMs = Date.now() - startTime;
+      this.responseTimes[side].push(responseTimeMs);
 
-      if (response.error) {
+      if (response.error || response.fallback) {
         this.invalidResponses[side]++;
       }
 
+      // Debug log to server console and client
+      const model = this.config.players[side].model ?? 'unknown';
+      const rawSnippet = (response.raw ?? '').slice(0, 200);
+      const logEntry: DebugLogEntry = {
+        timestamp: Date.now(),
+        side,
+        type: response.error ? 'error' : 'move',
+        model,
+        raw: rawSnippet,
+        parsed: response.move,
+        fallback: response.error || response.fallback || false,
+        responseTimeMs,
+      };
+
+      if (response.error || response.fallback) {
+        console.log(`[${side}] ${model} | ${response.parseMethod ?? 'error'} | "${rawSnippet}" → ${response.move} (${responseTimeMs}ms)`);
+      }
+
+      this.socket.emit('debugLog', logEntry);
       this.applyMove(side, response.move);
     });
 
@@ -119,7 +139,7 @@ export class MatchManager {
 
   private applyMove(side: 'left' | 'right', move: MoveDirection): void {
     const current = this.engine.getState().paddles[side].y;
-    const step = 0.08;
+    const step = 0.15;
     switch (move) {
       case 'UP': this.engine.setPaddleTarget(side, current - step); break;
       case 'DOWN': this.engine.setPaddleTarget(side, current + step); break;

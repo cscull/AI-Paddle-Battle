@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type {
-  GameState, MatchConfig, MatchStats, TrashTalkMessage, MoveDirection,
+  GameState, MatchConfig, MatchStats, TrashTalkMessage, MoveDirection, DebugLogEntry,
   ServerToClientEvents, ClientToServerEvents,
 } from '../types';
 
@@ -12,6 +12,7 @@ interface UseGameSocketOptions {
 export function useGameSocket({ onMatchEnd }: UseGameSocketOptions) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [trashTalkLog, setTrashTalkLog] = useState<TrashTalkMessage[]>([]);
+  const [debugLog, setDebugLog] = useState<DebugLogEntry[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const onMatchEndRef = useRef(onMatchEnd);
@@ -27,7 +28,8 @@ export function useGameSocket({ onMatchEnd }: UseGameSocketOptions) {
     socket.on('disconnect', () => setIsConnected(false));
     socket.on('gameState', (state) => setGameState(state));
     socket.on('trashTalk', (msg) => setTrashTalkLog((prev) => [...prev, msg]));
-    socket.on('matchStart', () => setTrashTalkLog([]));
+    socket.on('debugLog', (entry) => setDebugLog((prev) => [...prev.slice(-199), entry]));
+    socket.on('matchStart', () => { setTrashTalkLog([]); setDebugLog([]); });
     socket.on('matchEnd', (stats) => onMatchEndRef.current(stats));
 
     return () => { socket.disconnect(); };
@@ -35,6 +37,7 @@ export function useGameSocket({ onMatchEnd }: UseGameSocketOptions) {
 
   const startMatch = useCallback((config: MatchConfig) => {
     setTrashTalkLog([]);
+    setDebugLog([]);
     setGameState(null);
     socketRef.current?.emit('startMatch', config);
   }, []);
@@ -68,6 +71,7 @@ export function useGameSocket({ onMatchEnd }: UseGameSocketOptions) {
   return {
     gameState,
     trashTalkLog,
+    debugLog,
     isConnected,
     startMatch,
     pauseMatch,
