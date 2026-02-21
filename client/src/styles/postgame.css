@@ -1,0 +1,375 @@
+/* ── Post-Game Screen ── */
+
+.postgame-screen {
+  position: relative;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ── Confetti Canvas ── */
+
+.postgame-confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Winner Announcement ── */
+
+.postgame-winner {
+  text-align: center;
+  z-index: 1;
+  padding-top: 1rem;
+}
+
+.postgame-winner-text {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: postgame-pulse 2s ease-in-out infinite;
+}
+
+.postgame-winner-text--left {
+  color: var(--cyan);
+  text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0, 255, 255, 0.4), 0 0 80px rgba(0, 255, 255, 0.15);
+}
+
+.postgame-winner-text--right {
+  color: var(--magenta);
+  text-shadow: 0 0 20px var(--magenta), 0 0 40px rgba(255, 0, 255, 0.4), 0 0 80px rgba(255, 0, 255, 0.15);
+}
+
+.postgame-winner-text--draw {
+  color: var(--yellow);
+  text-shadow: 0 0 20px var(--yellow), 0 0 40px rgba(255, 170, 0, 0.4), 0 0 80px rgba(255, 170, 0, 0.15);
+}
+
+@keyframes postgame-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* ── Final Score ── */
+
+.postgame-score {
+  text-align: center;
+  z-index: 1;
+}
+
+.postgame-score-numbers {
+  font-family: var(--font-mono);
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.postgame-score-left {
+  color: var(--cyan);
+}
+
+.postgame-score-separator {
+  color: var(--text-secondary);
+  margin: 0 0.3em;
+}
+
+.postgame-score-right {
+  color: var(--magenta);
+}
+
+.postgame-score-names {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.postgame-score-name--left {
+  color: var(--cyan-dim);
+}
+
+.postgame-score-name--right {
+  color: var(--magenta-dim);
+}
+
+/* ── Stats Comparison Table ── */
+
+.postgame-stats {
+  width: 100%;
+  z-index: 1;
+}
+
+.postgame-stats-title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.postgame-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.postgame-stats-table th,
+.postgame-stats-table td {
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.postgame-stats-table th {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.postgame-stats-table th:first-child {
+  color: var(--text-secondary);
+  text-align: left;
+  width: 40%;
+}
+
+.postgame-stats-table th:nth-child(2) {
+  color: var(--cyan);
+  text-align: center;
+  width: 30%;
+}
+
+.postgame-stats-table th:nth-child(3) {
+  color: var(--magenta);
+  text-align: center;
+  width: 30%;
+}
+
+.postgame-stats-table td:first-child {
+  color: var(--text-secondary);
+  text-align: left;
+  font-weight: 600;
+}
+
+.postgame-stats-table td:nth-child(2),
+.postgame-stats-table td:nth-child(3) {
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.postgame-stats-table tr:last-child td {
+  border-bottom: none;
+}
+
+.postgame-stats-table thead {
+  background: var(--bg-tertiary);
+}
+
+.postgame-stats-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Best Trash Talk ── */
+
+.postgame-trashtalk {
+  width: 100%;
+  z-index: 1;
+}
+
+.postgame-trashtalk-title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.postgame-trashtalk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.postgame-trashtalk-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.postgame-trashtalk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.postgame-trashtalk-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.postgame-trashtalk-dot--left {
+  background: var(--cyan);
+  box-shadow: 0 0 4px var(--cyan);
+}
+
+.postgame-trashtalk-dot--right {
+  background: var(--magenta);
+  box-shadow: 0 0 4px var(--magenta);
+}
+
+.postgame-trashtalk-model {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.postgame-trashtalk-model--left {
+  color: var(--cyan-dim);
+}
+
+.postgame-trashtalk-model--right {
+  color: var(--magenta-dim);
+}
+
+.postgame-trashtalk-text {
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+/* ── Action Buttons ── */
+
+.postgame-actions {
+  display: flex;
+  gap: 1rem;
+  z-index: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-bottom: 2rem;
+}
+
+.postgame-btn {
+  padding: 0.85rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.postgame-btn:hover {
+  transform: translateY(-1px);
+}
+
+.postgame-btn:active {
+  transform: translateY(0);
+}
+
+.postgame-btn--rematch {
+  color: #000;
+  background: var(--green);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.postgame-btn--rematch:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5), 0 0 60px rgba(0, 255, 136, 0.2);
+}
+
+.postgame-btn--new-match {
+  color: #000;
+  background: var(--cyan);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.postgame-btn--new-match:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.2);
+}
+
+.postgame-btn--share {
+  color: #000;
+  background: var(--magenta);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+}
+
+.postgame-btn--share:hover {
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.5), 0 0 60px rgba(255, 0, 255, 0.2);
+}
+
+.postgame-btn--copied {
+  background: var(--green) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3) !important;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .postgame-screen {
+    padding: 1rem;
+  }
+
+  .postgame-winner-text {
+    font-size: 1.8rem;
+  }
+
+  .postgame-score-numbers {
+    font-size: 3rem;
+  }
+
+  .postgame-score-names {
+    gap: 2rem;
+  }
+
+  .postgame-stats-table th,
+  .postgame-stats-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .postgame-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .postgame-btn {
+    text-align: center;
+  }
+}
