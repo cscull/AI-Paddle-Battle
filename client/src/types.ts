@@ -28,8 +28,11 @@ export type MoveDirection = 'UP' | 'DOWN' | 'STAY';
 
 export interface MoveResponse {
   move: MoveDirection;
+  target_y?: number;
   raw?: string;
   error?: boolean;
+  parseMethod?: 'json_target' | 'regex_target' | 'json' | 'regex_json' | 'keyword' | 'fallback';
+  fallback?: boolean;
 }
 
 export interface LLMGameState {
@@ -38,6 +41,8 @@ export interface LLMGameState {
   opponent_paddle_y: number;
   score: { you: number; opponent: number };
   game_time_remaining_seconds: number;
+  ball_moving_toward_you: boolean;
+  ticks_until_ball_reaches_you: number | null;
 }
 
 export interface TrashTalkContext {

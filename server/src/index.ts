@@ -11,13 +11,14 @@ import { createAdapter } from './adapters/index.js';
 dotenv.config({ path: '../.env' });
 
 const app = express();
-app.use(cors());
+const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:4000';
+app.use(cors({ origin: ALLOWED_ORIGIN }));
 app.use(express.json());
 
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ALLOWED_ORIGIN,
     methods: ['GET', 'POST'],
   },
 });
@@ -68,7 +69,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 4001;
 httpServer.listen(PORT, () => {
   console.log(`AI Paddle Battle server running on port ${PORT}`);
 });

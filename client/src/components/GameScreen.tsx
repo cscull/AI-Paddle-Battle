@@ -125,9 +125,9 @@ function renderFrame(
   ctx.stroke();
   ctx.restore();
 
-  // Left paddle (cyan)
+  // Left paddle (cyan) — paddle.y is center, fillRect draws from top-left
   const lx = PADDLE_X_LEFT * w;
-  const ly = gameState.paddles.left.y * h;
+  const ly = (gameState.paddles.left.y - PADDLE_HEIGHT / 2) * h;
   const pw = PADDLE_WIDTH * w;
   const ph = PADDLE_HEIGHT * h;
   ctx.fillStyle = '#00ffff';
@@ -136,9 +136,9 @@ function renderFrame(
   ctx.fillRect(lx, ly, pw, ph);
   ctx.shadowBlur = 0;
 
-  // Right paddle (magenta)
+  // Right paddle (magenta) — paddle.y is center, fillRect draws from top-left
   const rx = (PADDLE_X_RIGHT - PADDLE_WIDTH) * w;
-  const ry = gameState.paddles.right.y * h;
+  const ry = (gameState.paddles.right.y - PADDLE_HEIGHT / 2) * h;
   ctx.fillStyle = '#ff00ff';
   ctx.shadowColor = '#ff00ff';
   ctx.shadowBlur = 8;

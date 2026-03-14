@@ -3,3 +3,18 @@ dist/
 .env
 *.log
 .DS_Store
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+
+# OS files
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo

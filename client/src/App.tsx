@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MatchConfig, MatchStats } from './types';
 import SetupScreen from './components/SetupScreen';
 import GameScreen from './components/GameScreen';
@@ -32,7 +32,19 @@ export default function App() {
     },
   });
 
+  // Auto-open stats panel when errors accumulate
+  const autoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (screen !== 'game' || statsPanelOpen || autoOpenedRef.current) return;
+    const errorCount = debugLog.filter(e => e.fallback || e.type === 'error').length;
+    if (errorCount >= 3) {
+      setStatsPanelOpen(true);
+      autoOpenedRef.current = true;
+    }
+  }, [debugLog, screen, statsPanelOpen]);
+
   const handleStartMatch = (config: MatchConfig) => {
+    autoOpenedRef.current = false;
     setMatchConfig(config);
     startMatch(config);
     setScreen('game');

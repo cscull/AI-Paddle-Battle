@@ -1,10 +1,10 @@
 import type { Socket } from 'socket.io';
 import type {
-  MatchConfig, GameState, LLMGameState, LLMAdapter,
+  MatchConfig, GameState, LLMGameState, LLMAdapter, MoveResponse,
   PlayerStats, MatchStats, TrashTalkMessage, MoveDirection, DebugLogEntry,
   ServerToClientEvents, ClientToServerEvents,
 } from './types.js';
-import { GameEngine } from './game-engine.js';
+import { GameEngine, GAME_CONSTANTS } from './game-engine.js';
 import { createAdapter } from './adapters/index.js';
 import { estimateCost } from './pricing.js';
 
@@ -93,17 +93,16 @@ export class MatchManager {
         type: response.error ? 'error' : 'move',
         model,
         raw: rawSnippet,
-        parsed: response.move,
+        parsed: response.target_y !== undefined ? `target_y=${response.target_y.toFixed(3)}` : response.move,
         fallback: response.error || response.fallback || false,
         responseTimeMs,
       };
 
-      if (response.error || response.fallback) {
-        console.log(`[${side}] ${model} | ${response.parseMethod ?? 'error'} | "${rawSnippet}" → ${response.move} (${responseTimeMs}ms)`);
-      }
+      const parsedLabel = response.target_y !== undefined ? `target_y=${response.target_y.toFixed(3)}` : response.move;
+      console.log(`[${side}] ${model} | ${response.parseMethod ?? 'error'} | "${rawSnippet.slice(0, 80)}" → ${parsedLabel} (${responseTimeMs}ms)`);
 
       this.socket.emit('debugLog', logEntry);
-      this.applyMove(side, response.move);
+      this.applyMove(side, response);
     });
 
     await Promise.allSettled(queries);
@@ -120,11 +119,21 @@ export class MatchManager {
 
   private buildLLMState(state: GameState, side: 'left' | 'right'): LLMGameState {
     const isLeft = side === 'left';
+    const normalizedDx = isLeft ? state.ball.dx : -state.ball.dx;
+    const normalizedBallX = isLeft ? state.ball.x : 1 - state.ball.x;
+    const ballMovingToward = normalizedDx < 0;
+
+    // Compute ticks until ball reaches this player's paddle face
+    const paddleFaceX = GAME_CONSTANTS.PADDLE_X_LEFT + GAME_CONSTANTS.PADDLE_WIDTH;
+    const ticksToArrival = ballMovingToward && normalizedDx !== 0
+      ? Math.round((normalizedBallX - paddleFaceX) / Math.abs(normalizedDx))
+      : null;
+
     return {
       ball: {
-        x: isLeft ? state.ball.x : 1 - state.ball.x,
+        x: normalizedBallX,
         y: state.ball.y,
-        dx: isLeft ? state.ball.dx : -state.ball.dx,
+        dx: normalizedDx,
         dy: state.ball.dy,
       },
       your_paddle_y: state.paddles[side].y,
@@ -134,13 +143,21 @@ export class MatchManager {
         opponent: state.score[isLeft ? 'right' : 'left'],
       },
       game_time_remaining_seconds: Math.round(state.timeRemainingSeconds),
+      ball_moving_toward_you: ballMovingToward,
+      ticks_until_ball_reaches_you: ticksToArrival,
     };
   }
 
-  private applyMove(side: 'left' | 'right', move: MoveDirection): void {
+  private applyMove(side: 'left' | 'right', response: MoveResponse): void {
+    // New format: AI specifies exact target Y position
+    if (response.target_y !== undefined) {
+      this.engine.setPaddleTarget(side, response.target_y);
+      return;
+    }
+    // Legacy format: directional UP/DOWN/STAY
     const current = this.engine.getState().paddles[side].y;
     const step = 0.15;
-    switch (move) {
+    switch (response.move) {
       case 'UP': this.engine.setPaddleTarget(side, current - step); break;
       case 'DOWN': this.engine.setPaddleTarget(side, current + step); break;
       case 'STAY': break;
@@ -149,7 +166,13 @@ export class MatchManager {
 
   handleHumanInput(side: 'left' | 'right', direction: MoveDirection): void {
     if (this.config.players[side].type !== 'human') return;
-    this.applyMove(side, direction);
+    const current = this.engine.getState().paddles[side].y;
+    const step = 0.15;
+    switch (direction) {
+      case 'UP': this.engine.setPaddleTarget(side, current - step); break;
+      case 'DOWN': this.engine.setPaddleTarget(side, current + step); break;
+      case 'STAY': break;
+    }
   }
 
   private async generateTrashTalk(scorer: 'left' | 'right', state: GameState): Promise<void> {

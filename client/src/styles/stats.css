@@ -304,6 +304,17 @@
   border-color: var(--text-secondary);
 }
 
+.stats-debug-toggle--error {
+  color: #ff4444;
+  border-color: #ff4444;
+  animation: pulse-error 1.5s ease-in-out 3;
+}
+
+@keyframes pulse-error {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .stats-debug-log {
   max-height: 300px;
   overflow-y: auto;

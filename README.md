@@ -1,15 +1,10 @@
 # AI Paddle Battle
 
-**Watch AI models compete in a real-time paddle-and-ball game with live trash talk.**
+**Watch AI models compete in a real-time paddle game with live trash talk.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![AI Paddle Battle](docs/screenshots/gameplay.png)
-*Screenshot coming soon -- run the game to see it in action!*
-
-## Why This Exists
-
-A fun, visual way to compare LLM response times, decision-making, and personalities. Watch different AI models trash talk each other while competing in a classic paddle-and-ball game. Great for demos, presentations, and settling debates about which AI is best at real-time games.
+A fun, visual way to compare LLM response times, decision-making, and personalities. Pick two AI models, hit start, and watch them play -- complete with real-time trash talk after every point.
 
 ## Quick Start
 
@@ -20,44 +15,42 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:4000](http://localhost:4000), enter an API key for at least one provider, and start a match.
 
-## Configuring API Keys
+## How It Works
 
-- Enter API keys in the pre-game UI, one per provider.
-- Keys are stored in your browser's `localStorage`.
-- Keys are only sent to the local server during a game session and are never persisted on disk.
+1. **Pick two players** -- any combination of AI models or human (keyboard)
+2. **Enter API keys** -- keys stay in your browser and are only sent to the game server during a match
+3. **Watch them play** -- the server queries each AI ~3 times per second for paddle position decisions
+4. **Trash talk** -- after every point, models roast each other
+
+The game runs server-side at 60fps. Each AI receives the current game state (ball position, velocity, paddle positions, score) and responds with a target y-coordinate for its paddle.
+
+## API Keys
+
+- Enter keys in the setup screen, one per provider
+- Keys are stored in browser `localStorage` for convenience
+- Keys are **never** persisted server-side -- they exist only in memory during a match
 - Alternatively, copy `.env.example` to `.env` for self-hosted setups:
   ```bash
   cp .env.example .env
-  # Edit .env and fill in the keys you need
   ```
 
-## Free Local Play with Ollama
+## Supported Providers
 
-No API keys needed -- run models entirely on your machine:
+| Provider | Models | API Key |
+|---|---|---|
+| **OpenAI** | GPT-5.4, GPT-5.2, GPT-5.1, GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o4-mini, o3 | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **Anthropic** | Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| **Google** | Gemini 3.1 Pro, Gemini 3 Flash, Gemini 3.1 Flash Lite, Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.5 Flash Lite | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| **xAI** | Grok 4.20, Grok 4.1 Fast, Grok 4 Fast, Grok Code Fast, Grok 4, Grok 3, Grok 3 Mini | [console.x.ai](https://console.x.ai/) |
+| **Mistral** | Mistral Large, Mistral Medium, Mistral Small, Magistral Medium, Magistral Small, Codestral | [console.mistral.ai](https://console.mistral.ai/api-keys/) |
+| **DeepSeek** | DeepSeek V3.2, DeepSeek V3.2 Reasoner | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| **Moonshot AI** | Kimi K2.5 | [platform.moonshot.ai](https://platform.moonshot.ai/) |
+| **Cohere** | Command A, Command A Reasoning, Command R+ | [dashboard.cohere.com](https://dashboard.cohere.com/api-keys) |
+| **Alibaba (Qwen)** | Qwen3 Max, Qwen3.5 Plus, Qwen3.5 Flash, Qwen Flash, QwQ Plus | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com/) |
 
-```bash
-# Install Ollama: https://ollama.ai
-ollama pull llama3.1
-# Then select "Ollama (Local)" as the provider in the game UI
-```
-
-## Supported Providers (11)
-
-| Provider | Models |
-|---|---|
-| **OpenAI** | GPT-5.2, GPT-5 Mini, GPT-5 Nano, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o4-mini (7) |
-| **Anthropic** | Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5 (3) |
-| **Google (Gemini)** | Gemini 3.1 Pro, Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.5 Flash Lite (6) |
-| **xAI (Grok)** | Grok 4, Grok 4 Fast (Reasoning), Grok 4 Fast (Instant), Grok 4.1 Fast (Reasoning), Grok 4.1 Fast (Instant), Grok 3 Mini Fast (6) |
-| **Mistral** | Mistral Large 3, Mistral Medium 3.1, Mistral Small 3.2, Magistral Medium, Magistral Small, Codestral, Ministral 8B, Ministral 3B (8) |
-| **DeepSeek** | DeepSeek V3.2, DeepSeek V3.2 Reasoner (2) |
-| **Moonshot AI (Kimi)** | Kimi K2.5, Kimi K2 Thinking (2) |
-| **Cohere** | Command A, Command R+ (2) |
-| **Alibaba (Qwen)** | Qwen3 Max, Qwen Plus, Qwen Turbo, QwQ Plus (4) |
-| **OpenRouter** | GPT-4.1, Claude Sonnet 4.6, Gemini 2.5 Flash, Mistral Large 3, Grok 3 Mini Fast, DeepSeek V3.2, DeepSeek V3.2 Reasoner, Llama 4 Maverick, Llama 4 Scout, Qwen3 235B, Command A (11) |
-| **Ollama (Local)** | Llama 3.1 8B, Llama 4 Maverick, Qwen3, DeepSeek R1, Mistral 7B, Gemma 3, Phi-4 (7 preset + any local model) |
+Most providers offer free tiers or trial credits. A typical 3-minute match uses ~500-2000 tokens per player -- pennies on most models.
 
 ## Architecture
 
@@ -65,43 +58,60 @@ ollama pull llama3.1
 ai-paddle-battle/
 ├── client/          React + Vite front-end
 │   └── src/
-│       ├── components/   SetupScreen, GameCanvas, StatsPanel, etc.
+│       ├── components/   SetupScreen, GameScreen, StatsPanel, PostGameScreen
 │       ├── hooks/        useGameSocket (Socket.IO client)
-│       └── styles/       CSS modules
+│       ├── audio/        Web Audio API retro sound effects
+│       └── styles/       CSS
 ├── server/          Node.js + Express + Socket.IO back-end
 │   └── src/
 │       ├── adapters/     LLM provider adapters (one per provider)
-│       ├── engine/       Game loop, physics, collisions, scoring
 │       ├── prompts/      System/user prompt builders for moves & trash talk
+│       ├── game-engine.ts   60fps physics engine (normalized 0-1 coordinates)
+│       ├── match-manager.ts Orchestrates matches, LLM queries, stats
 │       ├── models.ts     Provider & model registry
-│       └── pricing.ts    Per-token cost data
+│       └── pricing.ts    Per-token cost data for post-game stats
 └── package.json     npm workspaces root
 ```
 
-- **Monorepo** with npm workspaces (`client` + `server`).
-- **Client:** React + Vite, renders an HTML5 Canvas game view, communicates over WebSocket.
-- **Server:** Express serves the API; Socket.IO pushes real-time game state. The server-side game loop runs at 60 fps. LLM move queries happen on a configurable interval.
-- **Adapter pattern:** Each LLM provider has a thin adapter. Most extend `OpenAICompatibleAdapter`; providers with non-standard APIs (Anthropic, Google) extend `BaseAdapter` directly.
+- **Server-authoritative**: All game logic runs server-side. The client is a pure renderer.
+- **Adapter pattern**: Each provider has a thin adapter. Most extend `OpenAICompatibleAdapter` (~6 lines); Anthropic and Google have custom adapters for their non-standard APIs.
+- **No database**: Everything is in-memory. No user data is stored.
 
-## Adding a New LLM Provider
+## Development
 
-See [docs/adding-providers.md](docs/adding-providers.md) for a step-by-step guide, including a code example that shows how an OpenAI-compatible adapter is only ~6 lines.
+```bash
+npm install          # Install all dependencies
+npm run dev          # Start client + server in dev mode
+npm test             # Run server tests (vitest)
+npm run build        # Build for production
+```
 
-## Token Usage and Cost
+| Command | Description |
+|---|---|
+| `npm run dev -w client` | Start only the Vite dev server |
+| `npm run dev -w server` | Start only the backend (tsx watch) |
+| `npx tsc --noEmit -p server/tsconfig.json` | Type-check server |
+| `npx tsc --noEmit -p client/tsconfig.json` | Type-check client |
 
-A typical 3-minute match uses roughly:
+## Adding a New Provider
 
-- **Move decisions:** ~500--2000 tokens per player
-- **Trash talk:** ~200--500 tokens per player
-
-Actual cost depends on the model chosen. Budget models (GPT-4.1 Nano, Mistral Small, Ollama local) keep costs near zero; frontier models will cost a few cents per match.
+See [docs/adding-providers.md](docs/adding-providers.md) for a step-by-step guide. For an OpenAI-compatible provider, the adapter is ~6 lines of code.
 
 ## Contributing
 
-1. Fork the repo and create a feature branch.
-2. Read the [Architecture](#architecture) section and [docs/adding-providers.md](docs/adding-providers.md).
-3. Make your changes with tests where appropriate.
-4. Open a pull request describing what you changed and why.
+1. Fork the repo and create a feature branch
+2. Make your changes with tests where appropriate
+3. Run `npm test` and type-check both workspaces
+4. Open a pull request describing what you changed and why
+
+## Security
+
+- API keys are entered client-side and sent to the local game server only during active matches
+- Keys are never written to disk, logged, or sent anywhere except the respective LLM provider's API
+- The server restricts CORS to `localhost` by default (configurable via `CORS_ORIGIN` env var)
+- No user data is collected or stored
+
+If you find a security issue, please open a GitHub issue or email the maintainer directly.
 
 ## License
 

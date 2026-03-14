@@ -547,7 +547,7 @@ describe('GameEngine', () => {
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/caseyscull/GitHub/AI-Paddle-Battle && npm test -w server`
+Run: `cd AI-Paddle-Battle && npm test -w server`
 Expected: FAIL — module not found
 
 **Step 3: Implement GameEngine class with constants and initialization**

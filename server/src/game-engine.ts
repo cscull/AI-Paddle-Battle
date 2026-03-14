@@ -188,22 +188,30 @@ export class GameEngine {
     const radius = GAME_CONSTANTS.BALL_RADIUS;
     const halfPaddle = GAME_CONSTANTS.PADDLE_HEIGHT / 2;
 
-    // Left paddle collision
+    // Use crossing-based detection to prevent tunneling at high speeds.
+    // Detect the tick when the ball's edge first crosses the paddle face.
+    const leftFaceX = GAME_CONSTANTS.PADDLE_X_LEFT + GAME_CONSTANTS.PADDLE_WIDTH;
+    const rightFaceX = GAME_CONSTANTS.PADDLE_X_RIGHT - GAME_CONSTANTS.PADDLE_WIDTH;
+
+    // Previous ball position (before moveBall applied dx this tick)
+    const prevBallX = ball.x - ball.dx;
+
+    // Left paddle: ball crossing face from right to left
     if (
       ball.dx < 0 &&
-      ball.x - radius <= GAME_CONSTANTS.PADDLE_X_LEFT + GAME_CONSTANTS.PADDLE_WIDTH &&
-      ball.x - radius >= GAME_CONSTANTS.PADDLE_X_LEFT &&
+      ball.x - radius <= leftFaceX &&
+      prevBallX - radius >= leftFaceX &&
       ball.y >= this.state.paddles.left.y - halfPaddle &&
       ball.y <= this.state.paddles.left.y + halfPaddle
     ) {
       this.handlePaddleHit('left');
     }
 
-    // Right paddle collision
+    // Right paddle: ball crossing face from left to right
     if (
       ball.dx > 0 &&
-      ball.x + radius >= GAME_CONSTANTS.PADDLE_X_RIGHT - GAME_CONSTANTS.PADDLE_WIDTH &&
-      ball.x + radius <= GAME_CONSTANTS.PADDLE_X_RIGHT &&
+      ball.x + radius >= rightFaceX &&
+      prevBallX + radius <= rightFaceX &&
       ball.y >= this.state.paddles.right.y - halfPaddle &&
       ball.y <= this.state.paddles.right.y + halfPaddle
     ) {

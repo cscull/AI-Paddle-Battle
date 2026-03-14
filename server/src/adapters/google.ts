@@ -17,8 +17,9 @@ export class GoogleAdapter extends BaseAdapter {
           system_instruction: { parts: [{ text: system }] },
           contents: [{ role: 'user', parts: [{ text: user }] }],
           generationConfig: {
-            maxOutputTokens: 60,
+            maxOutputTokens: 150,
             temperature: 0.3,
+            responseMimeType: 'application/json',
           },
         }),
       }
@@ -26,6 +27,7 @@ export class GoogleAdapter extends BaseAdapter {
 
     if (!response.ok) {
       const text = await response.text();
+      console.error(`[google/${this.model}] API ERROR ${response.status}:\n${text}`);
       throw new Error(`Google API error ${response.status}: ${text}`);
     }
 

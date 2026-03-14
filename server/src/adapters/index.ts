@@ -8,8 +8,6 @@ import { DeepSeekAdapter } from './deepseek.js';
 import { MoonshotAdapter } from './moonshot.js';
 import { CohereAdapter } from './cohere.js';
 import { QwenAdapter } from './qwen.js';
-import { OpenRouterAdapter } from './openrouter.js';
-import { OllamaAdapter } from './ollama.js';
 
 export function createAdapter(provider: string, model: string, apiKey: string): LLMAdapter {
   switch (provider) {
@@ -22,8 +20,6 @@ export function createAdapter(provider: string, model: string, apiKey: string): 
     case 'moonshot': return new MoonshotAdapter(model, apiKey);
     case 'cohere': return new CohereAdapter(model, apiKey);
     case 'qwen': return new QwenAdapter(model, apiKey);
-    case 'openrouter': return new OpenRouterAdapter(model, apiKey);
-    case 'ollama': return new OllamaAdapter(model);
     default: throw new Error(`Unknown provider: ${provider}`);
   }
 }

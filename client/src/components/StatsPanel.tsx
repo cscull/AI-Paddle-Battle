@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MatchConfig, TrashTalkMessage, DebugLogEntry } from '../types';
 import TrashTalkLog from './TrashTalkLog';
 import '../styles/stats.css';
@@ -13,6 +13,18 @@ interface StatsPanelProps {
 
 export default function StatsPanel({ matchConfig, isOpen, onToggle, trashTalkMessages = [], debugLog = [] }: StatsPanelProps) {
   const [showDebug, setShowDebug] = useState(false);
+  const autoExpandedRef = useRef(false);
+
+  // Auto-expand debug log when errors/fallbacks appear
+  useEffect(() => {
+    if (showDebug || autoExpandedRef.current) return;
+    const errorCount = debugLog.filter(e => e.fallback || e.type === 'error').length;
+    if (errorCount >= 2) {
+      setShowDebug(true);
+      autoExpandedRef.current = true;
+    }
+  }, [debugLog, showDebug]);
+
   const leftPlayer = matchConfig.players.left;
   const rightPlayer = matchConfig.players.right;
 
@@ -73,7 +85,7 @@ export default function StatsPanel({ matchConfig, isOpen, onToggle, trashTalkMes
         {/* Debug log section */}
         <div className="stats-debug-section">
           <button
-            className="stats-debug-toggle"
+            className={`stats-debug-toggle ${debugLog.some(e => e.type === 'error') ? 'stats-debug-toggle--error' : ''}`}
             onClick={() => setShowDebug(!showDebug)}
           >
             {showDebug ? 'Hide' : 'Show'} Debug Log ({debugLog.filter(e => e.fallback).length} fallbacks / {debugLog.length} total)
