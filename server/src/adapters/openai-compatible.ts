@@ -16,26 +16,27 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
       : { max_tokens: limit };
   }
 
-  // OpenAI GPT-5 series and o-series reject temperature parameter
-  private supportsTemperature(): boolean {
-    if (this.provider !== 'openai') return true;
-    // GPT-5 series (gpt-5.4, gpt-5.2, gpt-5.1, gpt-5, gpt-5-mini, gpt-5-nano) reject temperature
-    if (this.model.startsWith('gpt-5')) return false;
-    // o-series (o4-mini, o3, etc.) reject temperature
-    if (this.model.startsWith('o')) return false;
-    // GPT-4.1 and other models support temperature
-    return true;
+  // OpenAI GPT-5 series are reasoning models
+  private isReasoningModel(): boolean {
+    if (this.provider !== 'openai') return false;
+    if (this.model.startsWith('gpt-5')) return true;
+    return false;
   }
 
   async callLLM(system: string, user: string): Promise<{ content: string; usage?: { input: number; output: number } }> {
+    const reasoning = this.isReasoningModel();
     const requestBody = {
       model: this.model,
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      ...this.tokenLimitParam(150),
-      ...(this.supportsTemperature() ? { temperature: 0.3 } : {}),
+      // Reasoning models need more tokens (reasoning + output tokens share the budget)
+      ...this.tokenLimitParam(reasoning ? 2048 : 150),
+      // Reasoning models reject temperature; minimize reasoning for fast game moves
+      ...(reasoning
+        ? { reasoning_effort: 'low' }
+        : { temperature: 0.3 }),
     };
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -59,7 +60,15 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content ?? '';
+    const message = data.choices?.[0]?.message;
+    const content = message?.content ?? '';
+
+    // Debug: log empty responses to diagnose reasoning model issues
+    if (!content && message) {
+      console.error(`[${this.provider}/${this.model}] EMPTY CONTENT — full message:`, JSON.stringify(message));
+      console.error(`[${this.provider}/${this.model}] finish_reason:`, data.choices?.[0]?.finish_reason);
+    }
+
     const usage = data.usage
       ? { input: data.usage.prompt_tokens ?? 0, output: data.usage.completion_tokens ?? 0 }
       : { input: Math.ceil((system.length + user.length) / 4), output: Math.ceil(content.length / 4) };

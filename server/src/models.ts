@@ -17,8 +17,6 @@ export const PROVIDERS: ProviderInfo[] = [
       { id: 'gpt-4.1', displayName: 'GPT-4.1' },
       { id: 'gpt-4.1-mini', displayName: 'GPT-4.1 Mini' },
       { id: 'gpt-4.1-nano', displayName: 'GPT-4.1 Nano' },
-      { id: 'o4-mini', displayName: 'o4-mini' },
-      { id: 'o3', displayName: 'o3' },
     ],
   },
   {

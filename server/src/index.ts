@@ -31,11 +31,36 @@ app.get('/api/providers', (_req, res) => {
   res.json(PROVIDERS);
 });
 
+// Clamp a number to a range, returning the default if invalid
+function clamp(val: unknown, min: number, max: number, fallback: number): number {
+  const n = Number(val);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
+// Sanitize error messages to prevent API key leakage
+function sanitizeError(error: unknown): string {
+  const msg = String(error);
+  // Strip anything that looks like an API key (sk-..., xai-..., AI..., etc.)
+  return msg.replace(/\b(sk-[a-zA-Z0-9_-]{10,}|xai-[a-zA-Z0-9_-]{10,}|AI[a-zA-Z0-9_-]{20,}|key-[a-zA-Z0-9_-]{10,})\b/g, '[REDACTED]');
+}
+
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
   let match: MatchManager | null = null;
 
   socket.on('startMatch', (config) => {
+    // Validate and clamp settings to safe ranges
+    if (!config?.players?.left || !config?.players?.right || !config?.settings) {
+      socket.emit('error', 'Invalid match config');
+      return;
+    }
+    config.settings.pointsToWin = clamp(config.settings.pointsToWin, 1, 21, 7);
+    config.settings.timeLimitSeconds = clamp(config.settings.timeLimitSeconds, 30, 600, 180);
+    config.settings.queryIntervalMs = clamp(config.settings.queryIntervalMs, 100, 2000, 300);
+    config.settings.ballSpeedMultiplier = clamp(config.settings.ballSpeedMultiplier, 0.5, 3.0, 1.0);
+    config.settings.trashTalkEnabled = Boolean(config.settings.trashTalkEnabled);
+
     if (match) match.stop();
     match = new MatchManager(socket, config);
     match.start();
@@ -49,6 +74,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('humanInput', (data) => {
+    if (data.side !== 'left' && data.side !== 'right') return;
+    if (!['up', 'down', 'stop'].includes(data.direction)) return;
     match?.handleHumanInput(data.side, data.direction);
   });
 
@@ -56,9 +83,13 @@ io.on('connection', (socket) => {
     try {
       const adapter = createAdapter(data.provider, data.model, data.apiKey);
       const result = await adapter.testConnection(data.apiKey);
-      socket.emit('connectionTest', { provider: data.provider, ...result });
+      socket.emit('connectionTest', {
+        provider: data.provider,
+        success: result.success,
+        error: result.error ? sanitizeError(result.error) : undefined,
+      });
     } catch (error) {
-      socket.emit('connectionTest', { provider: data.provider, success: false, error: String(error) });
+      socket.emit('connectionTest', { provider: data.provider, success: false, error: sanitizeError(error) });
     }
   });
 

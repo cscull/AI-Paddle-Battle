@@ -1,170 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { MatchConfig, PlayerConfig, PlayerType } from '../types';
 import type { ProviderInfo } from '../types';
 import ApiKeyInput from './ApiKeyInput';
 import '../styles/setup.css';
 
-// ── Hardcoded provider data (mirrors server/src/models.ts) ──
-
-const PROVIDERS: ProviderInfo[] = [
-  {
-    id: 'openai',
-    displayName: 'OpenAI',
-    baseUrl: 'https://api.openai.com/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'gpt-5.2', displayName: 'GPT-5.2' },
-      { id: 'gpt-5-mini', displayName: 'GPT-5 Mini' },
-      { id: 'gpt-5-nano', displayName: 'GPT-5 Nano' },
-      { id: 'gpt-4.1', displayName: 'GPT-4.1' },
-      { id: 'gpt-4.1-mini', displayName: 'GPT-4.1 Mini' },
-      { id: 'gpt-4.1-nano', displayName: 'GPT-4.1 Nano' },
-      { id: 'o4-mini', displayName: 'o4-mini' },
-    ],
-  },
-  {
-    id: 'anthropic',
-    displayName: 'Anthropic',
-    baseUrl: 'https://api.anthropic.com/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: false,
-    models: [
-      { id: 'claude-opus-4-6', displayName: 'Claude Opus 4.6' },
-      { id: 'claude-sonnet-4-6', displayName: 'Claude Sonnet 4.6' },
-      { id: 'claude-haiku-4-5-20251001', displayName: 'Claude Haiku 4.5' },
-    ],
-  },
-  {
-    id: 'google',
-    displayName: 'Google (Gemini)',
-    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    requiresApiKey: true,
-    isOpenAICompatible: false,
-    models: [
-      { id: 'gemini-3.1-pro-preview', displayName: 'Gemini 3.1 Pro' },
-      { id: 'gemini-3-pro-preview', displayName: 'Gemini 3 Pro' },
-      { id: 'gemini-3-flash-preview', displayName: 'Gemini 3 Flash' },
-      { id: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro' },
-      { id: 'gemini-2.5-flash', displayName: 'Gemini 2.5 Flash' },
-      { id: 'gemini-2.5-flash-lite', displayName: 'Gemini 2.5 Flash Lite' },
-    ],
-  },
-  {
-    id: 'xai',
-    displayName: 'xAI (Grok)',
-    baseUrl: 'https://api.x.ai/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'grok-4', displayName: 'Grok 4' },
-      { id: 'grok-4-fast-reasoning', displayName: 'Grok 4 Fast (Reasoning)' },
-      { id: 'grok-4-fast-non-reasoning', displayName: 'Grok 4 Fast (Instant)' },
-      { id: 'grok-4-1-fast-reasoning', displayName: 'Grok 4.1 Fast (Reasoning)' },
-      { id: 'grok-4-1-fast-non-reasoning', displayName: 'Grok 4.1 Fast (Instant)' },
-      { id: 'grok-3-mini-fast-beta', displayName: 'Grok 3 Mini Fast' },
-    ],
-  },
-  {
-    id: 'mistral',
-    displayName: 'Mistral',
-    baseUrl: 'https://api.mistral.ai/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'mistral-large-2512', displayName: 'Mistral Large 3' },
-      { id: 'mistral-medium-2508', displayName: 'Mistral Medium 3.1' },
-      { id: 'mistral-small-2506', displayName: 'Mistral Small 3.2' },
-      { id: 'magistral-medium-2506', displayName: 'Magistral Medium (reasoning)' },
-      { id: 'magistral-small-2506', displayName: 'Magistral Small (reasoning)' },
-      { id: 'codestral-2508', displayName: 'Codestral' },
-      { id: 'ministral-8b-2512', displayName: 'Ministral 8B' },
-      { id: 'ministral-3b-2512', displayName: 'Ministral 3B' },
-    ],
-  },
-  {
-    id: 'deepseek',
-    displayName: 'DeepSeek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'deepseek-chat', displayName: 'DeepSeek V3.2' },
-      { id: 'deepseek-reasoner', displayName: 'DeepSeek V3.2 Reasoner' },
-    ],
-  },
-  {
-    id: 'moonshot',
-    displayName: 'Moonshot AI (Kimi)',
-    baseUrl: 'https://api.moonshot.ai/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'kimi-k2.5', displayName: 'Kimi K2.5' },
-      { id: 'kimi-k2-thinking', displayName: 'Kimi K2 Thinking' },
-    ],
-  },
-  {
-    id: 'cohere',
-    displayName: 'Cohere',
-    baseUrl: 'https://api.cohere.ai/compatibility/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'command-a-03-2025', displayName: 'Command A' },
-      { id: 'command-r-plus-08-2024', displayName: 'Command R+' },
-    ],
-  },
-  {
-    id: 'qwen',
-    displayName: 'Alibaba (Qwen)',
-    baseUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'qwen3-max', displayName: 'Qwen3 Max' },
-      { id: 'qwen-plus', displayName: 'Qwen Plus' },
-      { id: 'qwen-turbo', displayName: 'Qwen Turbo' },
-      { id: 'qwq-plus', displayName: 'QwQ Plus (reasoning)' },
-    ],
-  },
-  {
-    id: 'openrouter',
-    displayName: 'OpenRouter',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    requiresApiKey: true,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'openai/gpt-4.1', displayName: 'GPT-4.1' },
-      { id: 'anthropic/claude-sonnet-4.6', displayName: 'Claude Sonnet 4.6' },
-      { id: 'google/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash' },
-      { id: 'mistralai/mistral-large-2512', displayName: 'Mistral Large 3' },
-      { id: 'x-ai/grok-3-mini-fast-beta', displayName: 'Grok 3 Mini Fast' },
-      { id: 'deepseek/deepseek-chat', displayName: 'DeepSeek V3.2' },
-      { id: 'deepseek/deepseek-reasoner', displayName: 'DeepSeek V3.2 Reasoner' },
-      { id: 'meta-llama/llama-4-maverick', displayName: 'Llama 4 Maverick' },
-      { id: 'meta-llama/llama-4-scout', displayName: 'Llama 4 Scout' },
-      { id: 'qwen/qwen3-235b-a22b', displayName: 'Qwen3 235B' },
-      { id: 'cohere/command-a-03-2025', displayName: 'Command A' },
-    ],
-  },
-  {
-    id: 'ollama',
-    displayName: 'Ollama (Local)',
-    baseUrl: 'http://localhost:11434/v1',
-    requiresApiKey: false,
-    isOpenAICompatible: true,
-    models: [
-      { id: 'llama3.1', displayName: 'Llama 3.1 8B' },
-      { id: 'llama4-maverick', displayName: 'Llama 4 Maverick' },
-      { id: 'qwen3', displayName: 'Qwen3' },
-      { id: 'deepseek-r1', displayName: 'DeepSeek R1' },
-      { id: 'mistral', displayName: 'Mistral 7B' },
-      { id: 'gemma3', displayName: 'Gemma 3' },
-      { id: 'phi4', displayName: 'Phi-4' },
-    ],
-  },
-];
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:4001';
 
 // ── Helpers ──
 
@@ -210,24 +50,37 @@ interface PlayerPanelState {
   name: string;
 }
 
-function makeDefaultPlayer(providerIndex: number): PlayerPanelState {
-  const prov = PROVIDERS[providerIndex];
-  const model = prov.models[0];
+function makeDefaultPlayer(providers: ProviderInfo[], providerIndex: number): PlayerPanelState {
+  const prov = providers[providerIndex] ?? providers[0];
+  const model = prov?.models[0];
   return {
     type: 'ai',
-    provider: prov.id,
-    model: model.id,
-    apiKey: loadApiKey(prov.id),
-    name: model.displayName,
+    provider: prov?.id ?? '',
+    model: model?.id ?? '',
+    apiKey: prov ? loadApiKey(prov.id) : '',
+    name: model?.displayName ?? '',
   };
 }
 
 // ── Component ──
 
 export default function SetupScreen({ onStartMatch, isConnected, testConnection }: SetupScreenProps) {
-  // Player states: left defaults to OpenAI, right defaults to Anthropic
-  const [left, setLeft] = useState<PlayerPanelState>(() => makeDefaultPlayer(0));
-  const [right, setRight] = useState<PlayerPanelState>(() => makeDefaultPlayer(1));
+  // Fetch providers from server (single source of truth)
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+
+  const [left, setLeft] = useState<PlayerPanelState>({ type: 'ai', provider: '', model: '', apiKey: '', name: '' });
+  const [right, setRight] = useState<PlayerPanelState>({ type: 'ai', provider: '', model: '', apiKey: '', name: '' });
+
+  useEffect(() => {
+    fetch(`${SERVER_URL}/api/providers`)
+      .then((res) => res.json())
+      .then((data: ProviderInfo[]) => {
+        setProviders(data);
+        setLeft(makeDefaultPlayer(data, 0));
+        setRight(makeDefaultPlayer(data, 1));
+      })
+      .catch((err) => console.error('Failed to fetch providers:', err));
+  }, []);
 
   // Settings
   const [pointsToWin, setPointsToWin] = useState(7);
@@ -240,11 +93,11 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
 
   const isPlayerReady = useCallback((p: PlayerPanelState): boolean => {
     if (p.type === 'human') return p.name.trim().length > 0;
-    const prov = PROVIDERS.find((pr) => pr.id === p.provider);
+    const prov = providers.find((pr) => pr.id === p.provider);
     if (!prov) return false;
     if (prov.requiresApiKey && !p.apiKey.trim()) return false;
     return p.name.trim().length > 0;
-  }, []);
+  }, [providers]);
 
   const canStart = isConnected && isPlayerReady(left) && isPlayerReady(right);
 
@@ -290,7 +143,7 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
       setter((prev) => ({ ...prev, type, name: type === 'human' ? '' : prev.name })),
     setProvider: (providerId: string) =>
       setter((prev) => {
-        const prov = PROVIDERS.find((p) => p.id === providerId);
+        const prov = providers.find((p) => p.id === providerId);
         const firstModel = prov?.models[0];
         const apiKey = loadApiKey(providerId);
         return {
@@ -303,7 +156,7 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
       }),
     setModel: (modelId: string) =>
       setter((prev) => {
-        const prov = PROVIDERS.find((p) => p.id === prev.provider);
+        const prov = providers.find((p) => p.id === prev.provider);
         const model = prov?.models.find((m) => m.id === modelId);
         return { ...prev, model: modelId, name: model?.displayName ?? prev.name };
       }),
@@ -333,6 +186,7 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
           side="left"
           state={left}
           updater={leftUpdater}
+          providers={providers}
           testConnection={testConnection}
         />
         <div className="setup-vs">VS</div>
@@ -340,6 +194,7 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
           side="right"
           state={right}
           updater={rightUpdater}
+          providers={providers}
           testConnection={testConnection}
         />
       </div>
@@ -387,11 +242,12 @@ interface PlayerPanelProps {
   side: 'left' | 'right';
   state: PlayerPanelState;
   updater: PlayerUpdater;
+  providers: ProviderInfo[];
   testConnection: SetupScreenProps['testConnection'];
 }
 
-function PlayerPanel({ side, state, updater, testConnection }: PlayerPanelProps) {
-  const provider = PROVIDERS.find((p) => p.id === state.provider);
+function PlayerPanel({ side, state, updater, providers, testConnection }: PlayerPanelProps) {
+  const provider = providers.find((p) => p.id === state.provider);
   const themeClass = side === 'left' ? 'panel--cyan' : 'panel--magenta';
   const label = side === 'left' ? 'Player 1 (Left)' : 'Player 2 (Right)';
 
@@ -425,7 +281,7 @@ function PlayerPanel({ side, state, updater, testConnection }: PlayerPanelProps)
               onChange={(e) => updater.setProvider(e.target.value)}
               className="panel-select"
             >
-              {PROVIDERS.map((p) => (
+              {providers.map((p) => (
                 <option key={p.id} value={p.id}>{p.displayName}</option>
               ))}
             </select>

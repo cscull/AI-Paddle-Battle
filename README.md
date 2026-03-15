@@ -2,6 +2,8 @@
 
 **Watch AI models compete in a real-time paddle game with live trash talk.**
 
+<p align="center"><img src="docs/screenshots/gameplay.gif" alt="AI Paddle Battle gameplay" width="800" /></p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A fun, visual way to compare LLM response times, decision-making, and personalities. Pick two AI models, hit start, and watch them play -- complete with real-time trash talk after every point.
@@ -40,7 +42,7 @@ The game runs server-side at 60fps. Each AI receives the current game state (bal
 
 | Provider | Models | API Key |
 |---|---|---|
-| **OpenAI** | GPT-5.4, GPT-5.2, GPT-5.1, GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o4-mini, o3 | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **OpenAI** | GPT-5.4, GPT-5.2, GPT-5.1, GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano | [platform.openai.com](https://platform.openai.com/api-keys) |
 | **Anthropic** | Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
 | **Google** | Gemini 3.1 Pro, Gemini 3 Flash, Gemini 3.1 Flash Lite, Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.5 Flash Lite | [aistudio.google.com](https://aistudio.google.com/apikey) |
 | **xAI** | Grok 4.20, Grok 4.1 Fast, Grok 4 Fast, Grok Code Fast, Grok 4, Grok 3, Grok 3 Mini | [console.x.ai](https://console.x.ai/) |
