@@ -31,8 +31,7 @@ The game runs server-side at 60fps. Each AI receives the current game state (bal
 ## API Keys
 
 - Enter keys in the setup screen, one per provider
-- Keys are stored in browser `localStorage` for convenience
-- Keys are **never** persisted server-side -- they exist only in memory during a match
+- Keys are **never** persisted -- they exist only in memory during a match and are cleared on page refresh
 - Alternatively, copy `.env.example` to `.env` for self-hosted setups:
   ```bash
   cp .env.example .env

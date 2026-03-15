@@ -8,30 +8,6 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:4001';
 
 // ── Helpers ──
 
-function getStorageKey(provider: string): string {
-  return `apb-apikey-${provider}`;
-}
-
-function loadApiKey(provider: string): string {
-  try {
-    return localStorage.getItem(getStorageKey(provider)) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function saveApiKey(provider: string, key: string): void {
-  try {
-    if (key) {
-      localStorage.setItem(getStorageKey(provider), key);
-    } else {
-      localStorage.removeItem(getStorageKey(provider));
-    }
-  } catch {
-    // Ignore storage errors
-  }
-}
-
 // ── Props ──
 
 interface SetupScreenProps {
@@ -57,7 +33,7 @@ function makeDefaultPlayer(providers: ProviderInfo[], providerIndex: number): Pl
     type: 'ai',
     provider: prov?.id ?? '',
     model: model?.id ?? '',
-    apiKey: prov ? loadApiKey(prov.id) : '',
+    apiKey: '',
     name: model?.displayName ?? '',
   };
 }
@@ -145,12 +121,11 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
       setter((prev) => {
         const prov = providers.find((p) => p.id === providerId);
         const firstModel = prov?.models[0];
-        const apiKey = loadApiKey(providerId);
         return {
           ...prev,
           provider: providerId,
           model: firstModel?.id ?? '',
-          apiKey,
+          apiKey: '',
           name: firstModel?.displayName ?? '',
         };
       }),
@@ -161,10 +136,7 @@ export default function SetupScreen({ onStartMatch, isConnected, testConnection 
         return { ...prev, model: modelId, name: model?.displayName ?? prev.name };
       }),
     setApiKey: (apiKey: string) =>
-      setter((prev) => {
-        saveApiKey(prev.provider, apiKey);
-        return { ...prev, apiKey };
-      }),
+      setter((prev) => ({ ...prev, apiKey })),
     setName: (name: string) => setter((prev) => ({ ...prev, name })),
   });
 

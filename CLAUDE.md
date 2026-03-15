@@ -46,7 +46,7 @@ Monorepo with npm workspaces (`client/` and `server/`).
 - **OpenAI-specific handling**: GPT-5 series and o-series reject `temperature` (use `supportsTemperature()`). OpenAI requires `max_completion_tokens` instead of `max_tokens` (use `tokenLimitParam()`).
 - **Server-authoritative**: All game logic runs server-side. Client is a pure renderer.
 - **Normalized coordinates**: All game positions are 0.0–1.0, no pixel values in game logic.
-- **API keys**: Never persisted server-side. Stored in browser localStorage, sent to server only during match.
+- **API keys**: Never persisted. Held in React state only during session, sent to server only during match.
 - **No database**: Everything is in-memory during a session.
 
 ## Naming
